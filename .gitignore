@@ -1,0 +1,5 @@
+*.py[cod]
+.project
+.pydevproject
+glance0.list
+glance1.dropbox

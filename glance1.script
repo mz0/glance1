@@ -1,0 +1,83 @@
+#!/bin/sh
+
+GDIR=glance1
+GTAR=${GDIR}.tgz
+
+if [ -d $GDIR ]; then
+  # we will not update GDIR
+  echo "${GDIR}\ exists. Exiting" >&2
+  exit
+fi
+
+if [ -f $GDIR ]; then
+  # we can not create GDIR
+  echo "$GDIR file exists. Exiting" >&2
+  exit
+fi
+
+if [ -f $GTAR ]; then
+  # we will not overwrite GTAR
+  echo "$GTAR file exists. Exiting" >&2
+  exit
+fi
+
+mkdir  $GDIR
+
+#AIXr=`oslevel -r`
+HPUXv='/stand/kernrel'
+SOLARISv='/etc/release'
+DEBIANv='/etc/lsb-release'
+RHATv='/etc/redhat-release'
+SUSEv='/etc/SuSE-release'
+ETCv='/etc/issue'
+GENTOOv='/etc/gentoo-release'
+RELFILES="$HPUXV $SOLARISv $DEBIANv $RHATv $SUSEv $ETCv" 
+
+for RFILE in $RELFILES; do
+  if [ -f $RFILE ]; then 
+    cp -p $RFILE   $GDIR/
+  fi
+done
+
+if [ -f $RHATv ];   then rpm -qa         > $GDIR/rpm-qa ; fi
+if [ -f $SUSEv ];   then rpm -qa         > $GDIR/rpm-qa ; fi
+if [ -f $DEBIANv ]; then dpkg -l         > $GDIR/dpkg-l ; fi
+if [ -f $GENTOOv ]; then emerge -epv world > $GDIR/emerge-e-world ; fi
+
+uname -a         > $GDIR/uname-a
+cp -p /etc/hosts   $GDIR/
+cp -p /etc/resolv.conf   $GDIR/
+cp -p /etc/passwd  $GDIR/
+cp -p /etc/group   $GDIR/
+
+free             > $GDIR/free
+dmesg            > $GDIR/dmesg
+
+SIFCONFIG='/sbin/ifconfig'
+BIFCONFIG='/bin/ifconfig'
+IFCONFIGs="$SIFCONFIG $BIFCONFIG"
+
+for CMD in $IFCONFIGs; do
+  if [ -x $CMD ]; then $CMD > $GDIR/ifconfig; fi
+done
+
+SbinIP='/sbin/ip'
+BinIP='/bin/ip'
+EXEIPs="$SbinIP $BinIP"
+
+for CMD in $EXEIPs; do
+  if [ -x $CMD ]; then 
+    $CMD addr > $GDIR/ip-addr
+    $CMD ro   > $GDIR/ip-routes
+  fi
+done
+
+lsmod         > $GDIR/lsmod
+ls -l /sys/class/net/*/device/driver > $GDIR/net-phys-dev
+
+df                > $GDIR/df
+cat /proc/cpuinfo > $GDIR/proc-cpuinfo
+cat /proc/mounts  > $GDIR/proc-mounts
+
+tar czf $GTAR $GDIR/
+rm -rf $GDIR
