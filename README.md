@@ -19,11 +19,11 @@ Password authentication uses ssh ASKPASS mechanics which is implemented with the
 It sources temporary file glance1.dropbox supplied by driver, sends password to ssh/scp and overwrites dropbox to minimize password exposure.
 The full package thus contains:
 
-# glance1ssh.py - the driver
-# catpass.py - helper to the driver
-# glance1.script - the script to execute remotely
-# (optional) glance1.list - list of hosts to assess
-# (optional) README.md - this Markdown-formatted description
+1. glance1ssh.py - the driver
+1. catpass.py - helper to the driver
+1. glance1.script - the script to execute remotely
+1. (optional) glance1.list - list of hosts to assess
+1. (optional) README.md - this Markdown-formatted description
 
 Some features used in glance1ssh.py require Python 2.6 (t.b.d.)
 This is the default Python version on Debian 6, RHEL 6, and SuSE 11. 
