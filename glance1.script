@@ -27,11 +27,14 @@ mkdir  $GDIR
 HPUXv='/stand/kernrel'
 SOLARISv='/etc/release'
 DEBIANv='/etc/lsb-release'
+DEBIANn='/etc/lsb-release'
 RHATv='/etc/redhat-release'
 SUSEv='/etc/SuSE-release'
 ETCv='/etc/issue'
 GENTOOv='/etc/gentoo-release'
-RELFILES="$HPUXV $SOLARISv $DEBIANv $RHATv $SUSEv $ETCv" 
+MACOS='/System/Library/CoreServices/SystemVersion.plist'
+MACSRV='/System/Library/CoreServices/ServerVersion.plist'
+RELFILES="$HPUXV $SOLARISv $DEBIANv $DEBIANn $RHATv $SUSEv $ETCv $MACOS $MACSRV"
 
 for RFILE in $RELFILES; do
   if [ -f $RFILE ]; then 
@@ -50,9 +53,6 @@ cp -p /etc/resolv.conf   $GDIR/
 cp -p /etc/passwd  $GDIR/
 cp -p /etc/group   $GDIR/
 
-free             > $GDIR/free
-dmesg            > $GDIR/dmesg
-
 SIFCONFIG='/sbin/ifconfig'
 BIFCONFIG='/bin/ifconfig'
 IFCONFIGs="$SIFCONFIG $BIFCONFIG"
@@ -61,23 +61,38 @@ for CMD in $IFCONFIGs; do
   if [ -x $CMD ]; then $CMD > $GDIR/ifconfig; fi
 done
 
-SbinIP='/sbin/ip'
-BinIP='/bin/ip'
-EXEIPs="$SbinIP $BinIP"
+if [ $(uname) != 'Darwin' ]; then
+  free             > $GDIR/free
+  dmesg            > $GDIR/dmesg
 
-for CMD in $EXEIPs; do
-  if [ -x $CMD ]; then 
-    $CMD addr > $GDIR/ip-addr
-    $CMD ro   > $GDIR/ip-routes
-  fi
-done
+  SbinIP='/sbin/ip'
+  BinIP='/bin/ip'
+  EXEIPs="$SbinIP $BinIP"
 
-lsmod         > $GDIR/lsmod
-ls -l /sys/class/net/*/device/driver > $GDIR/net-phys-dev
+  for CMD in $EXEIPs; do
+    if [ -x $CMD ]; then 
+      $CMD addr > $GDIR/ip-addr
+      $CMD ro   > $GDIR/ip-routes
+    fi
+  done
+
+  lsmod         > $GDIR/lsmod
+  ls -l /sys/class/net/*/device/driver > $GDIR/net-phys-dev
+
+  cat /proc/cpuinfo > $GDIR/proc-cpuinfo
+  cat /proc/mounts  > $GDIR/proc-mounts
+else
+  #echo "dmesg requires sudo on Darwin. Skipping dmesg, free, ip, lsmod, net driver list, cpuinfo"
+  NETSTAT=/usr/sbin/netstat
+  $NETSTAT -rn  > $GDIR/netstat-rn
+  OSVER=/usr/bin/sw_vers
+  $OSVER        > $GDIR/sw_vers
+  HWINFO="/usr/sbin/system_profiler -detailLevel mini"
+  $HWINFO       > $GDIR/sysprofile-mini 2> $GDIR/sysprofile-error
+  /sbin/mount   > $GDIR/mounts
+fi
 
 df                > $GDIR/df
-cat /proc/cpuinfo > $GDIR/proc-cpuinfo
-cat /proc/mounts  > $GDIR/proc-mounts
 
 tar czf $GTAR $GDIR/
 rm -rf $GDIR
