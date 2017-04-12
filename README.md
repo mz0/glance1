@@ -31,5 +31,7 @@ This is the default Python version on Debian 6, RHEL 6, and SuSE 11.
 On RHEL 5 one may install it from EPEL. In the later case please 
 use python26 binary (edit line 1 of glance1ssh.py)
 
+TODO: add mvl 6 (MontaVista Linux); add a note on macOS.
+
 [This project is hosted on Github](https://github.com/mz0/glance1)
 and bears no license - this work is in the Public Domain.
